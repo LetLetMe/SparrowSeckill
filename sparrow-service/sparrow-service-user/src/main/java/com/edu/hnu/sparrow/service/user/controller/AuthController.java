@@ -19,32 +19,34 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 @RequestMapping("/oauth")
 public class AuthController {
+    private static final String AUTHORIZATION="Authorization";
 
     @Autowired
     private AuthService authService;
-
-    @Value("${auth.clientId}")
-    private String clientId;
-
-    @Value("${auth.clientSecret}")
-    private String clientSecret;
-
-    @Value("${auth.cookieDomain}")
-    private String cookieDomain;
-
-    @Value("${auth.cookieMaxAge}")
-    private int cookieMaxAge;
-
-    @RequestMapping("/toLogin")
-    public String toLogin(@RequestParam(value = "FROM",required = false,defaultValue = "") String from, Model model){
-        model.addAttribute("from",from);
-        return "login";
-    }
+//
+//    @Value("${auth.clientId}")
+//    private String clientId;
+//
+//    @Value("${auth.clientSecret}")
+//    private String clientSecret;
+//
+//    @Value("${auth.cookieDomain}")
+//    private String cookieDomain;
+//
+//    @Value("${auth.cookieMaxAge}")
+//    private int cookieMaxAge;
+//
+//    @RequestMapping("/toLogin")
+//    public String toLogin(@RequestParam(value = "FROM",required = false,defaultValue = "") String from, Model model){
+//        model.addAttribute("from",from);
+//        return "login";
+//    }
 
 
     @RequestMapping("/login")
     @ResponseBody
     public Result login(String username, String password, HttpServletResponse httpServletResponse){
+
         //校验参数
         if (StringUtils.isEmpty(username)){
 //
@@ -61,13 +63,15 @@ public class AuthController {
         }
 
         //将jti的值存入cookie中
-        Cookie cookie = new Cookie("Authorization", authToken.getJti());
+        Cookie cookie = new Cookie(AUTHORIZATION, authToken.getJti());
         cookie.setDomain("localhost"); //域名
         cookie.setPath("/"); //设置到跟路径下
+
         httpServletResponse.addCookie(cookie);
 
         //返回结果
         //就把jti加入返回的对象头中
+
         return new Result(true, StatusCode.OK,"登录成功",authToken.getJti());
     }
 
