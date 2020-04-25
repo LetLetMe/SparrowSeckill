@@ -1,6 +1,8 @@
 package com.edu.hnu.sparrow.service.user.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.edu.hnu.sparrow.common.entity.AuthToken;
+import com.edu.hnu.sparrow.common.util.JwtUtil;
 import com.edu.hnu.sparrow.service.user.dao.UserMapper;
 import com.edu.hnu.sparrow.service.user.pojo.User;
 import com.edu.hnu.sparrow.service.user.service.AuthService;
@@ -12,6 +14,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.LinkedMultiValueMap;
@@ -19,76 +22,54 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class AuthServiceImpl implements AuthService {
+    private static final String LONG_TOKEN="long_token";
 
     @Autowired
-    private RestTemplate restTemplate;
-
-
-
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private StringRedisTemplate redisTemplate;
 
     @Autowired
     private UserMapper userMapper;
 
     @Override
-    public AuthToken login(String username, String password, HttpServletResponse httpServletResponse) {
-        //1.申请令牌
+    public AuthToken login(String username, String password) {
+
+        User user = userMapper.selectByPrimaryKey(username);
+        // 密码加密 BCrypt
+        if (user != null && BCrypt.checkpw(password, user.getPassword())) {
+            // 用户校验通过，生成令牌，保存到客户端(cookie)
+            // arg01:id唯一的ID  arg02: 载荷信息  arg03：token过期时间不设置默认一个小时
+            Map<String, Object> map = new HashMap<>();
+            map.put("role", "ROLE_USER");
+            map.put("status", "SUCCESS");
+            //我去，这里别把所有都放进去啊，放个用户名方便以后的服务使用就好了
+            map.put("userinfo", user.getName());
+            // 将map转String
+            String info = JSON.toJSONString(map);
+            String uuid=UUID.randomUUID().toString();
+            String token = JwtUtil.createJWT(uuid, info, null);
+
+            //把长的token存入redis，注意这里用到了一个hash命名空间
+            redisTemplate.boundHashOps(LONG_TOKEN).put(uuid,token);
 
 
-        //查询用户
-        User user=userMapper.selectByPrimaryKey(username);
-
-        if(){
-
+            AuthToken authToken=new AuthToken();
+            authToken.setAccessToken(token);
+            authToken.setJti(uuid);
+            return authToken;
         }
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type","password");
-        body.add("username",username);
-        body.add("password",password);
-
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.add("Authorization",this.getHttpBasic(clientId,clientSecret));
-        HttpEntity<MultiValueMap<String,String>> requestEntity = new HttpEntity<>(body,headers);
-
-        restTemplate.setErrorHandler(new DefaultResponseErrorHandler(){
-            @Override
-            public void handleError(ClientHttpResponse response) throws IOException {
-                if (response.getRawStatusCode()!=400 && response.getRawStatusCode()!=401){
-                    super.handleError(response);
-                }
-            }
-        });
-
-        ResponseEntity<Map> responseEntity = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Map.class);
-        Map map = responseEntity.getBody();
-        if (map == null || map.get("access_token") == null || map.get("refresh_token") == null || map.get("jti") == null){
-            //申请令牌失败
-            throw new RuntimeException("申请令牌失败");
-        }
-
-        //2.封装结果数据
-        AuthToken authToken = new AuthToken();
-        authToken.setAccessToken((String) map.get("access_token"));
-        authToken.setRefreshToken((String) map.get("refresh_token"));
-        authToken.setJti((String)map.get("jti"));
-
-        //3.将jti作为redis中的key,将jwt作为redis中的value进行数据的存放
-        stringRedisTemplate.boundValueOps(authToken.getJti()).set(authToken.getAccessToken(),ttl, TimeUnit.SECONDS);
-        return authToken;
+        return null;
     }
 
-    private String getHttpBasic(String clientId, String clientSecret) {
-        String value = clientId+":"+clientSecret;
-        byte[] encode = Base64Utils.encode(value.getBytes());
-        return "Basic "+new String(encode);
-    }
+
 }

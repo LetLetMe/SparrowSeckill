@@ -6,5 +6,5 @@ import javax.servlet.http.HttpServletResponse;
 
 public interface AuthService {
 
-    AuthToken login(String username, String password, HttpServletResponse httpServletResponse);
+    AuthToken login(String username, String password);
 }

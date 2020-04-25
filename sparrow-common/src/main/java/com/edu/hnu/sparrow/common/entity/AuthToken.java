@@ -7,8 +7,7 @@ public class AuthToken implements Serializable{
 
     //令牌信息 jwt
     String accessToken;
-    //刷新token(refresh_token)
-    String refreshToken;
+
     //jwt短令牌
     String jti;
 
@@ -20,13 +19,7 @@ public class AuthToken implements Serializable{
         this.accessToken = accessToken;
     }
 
-    public String getRefreshToken() {
-        return refreshToken;
-    }
 
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
 
     public String getJti() {
         return jti;
