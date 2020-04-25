@@ -39,6 +39,19 @@ public class SecKillGoodsServiceImpl implements SecKillGoodsService {
         return list;
     }
 
+    @Override
+    public List<SeckillGoods> testSelect(String time){
+        List<SeckillGoods> list = redisTemplate.boundHashOps(SECKILL_GOODS_KEY + time).values();
+
+        //更新库存数据的来源
+        //注意这里这个更新操作！hash结构里边那个库存是假库存！
+        for (SeckillGoods seckillGoods : list) {
+            String value = (String) redisTemplate.opsForValue().get(SECKILL_GOODS_STOCK_COUNT_KEY+seckillGoods.getId());
+            seckillGoods.setStockCount(Integer.parseInt(value));
+        }
+        return list;
+    }
+
     //从redis中查询商品详情
     @Override
     public SeckillGoods one(String time ,Long id){

@@ -18,6 +18,7 @@
             <artifactId>fastjson</artifactId>
             <version>1.2.51</version>
         </dependency>
+<!--        这个依赖是jwt令牌用的-->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>

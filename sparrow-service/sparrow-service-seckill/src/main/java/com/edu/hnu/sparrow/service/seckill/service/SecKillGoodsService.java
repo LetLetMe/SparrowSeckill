@@ -22,4 +22,12 @@ public interface SecKillGoodsService {
      * @return
      */
     SeckillGoods one(String time ,Long id);
+
+    /**
+     * 测试返回的数据到底是啥样的
+     * @param time
+     * @return
+     */
+    List<SeckillGoods> testSelect(String time);
+
 }

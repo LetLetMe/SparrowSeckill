@@ -15,7 +15,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
 @EnableEurekaClient
-@MapperScan(basePackages = {"com.changgou.seckill.dao"})
+@MapperScan(basePackages = {"com.edu.hnu.sparrow.service.seckill.dao"})
 @EnableScheduling
 //这个是用来支持多线程异步任务的
 @EnableAsync

@@ -30,7 +30,7 @@ public class SeckillGoodsPushTask {
 
     public static final String SECKILL_GOODS_STOCK_COUNT_KEY="seckill_goods_stock_count_";
 
-    @Scheduled(cron = "0/30 * * * * ?")
+    @Scheduled(cron = "0/50 * * * * ?")
     public void  loadSecKillGoodsToRedis(){
         /**
          * 1.查询所有符合条件的秒杀商品

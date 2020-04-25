@@ -11,6 +11,7 @@
         <module>sparrow-eureka</module>
         <module>sparrow-service</module>
         <module>sparrow-common</module>
+        <module>sparrow-gateway</module>
     </modules>
     <packaging>pom</packaging>
     <parent>
