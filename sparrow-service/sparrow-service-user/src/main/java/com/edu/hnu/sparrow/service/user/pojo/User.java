@@ -38,6 +38,11 @@ public class User implements Serializable {
     private java.util.Date birthday;//出生年月日
     private java.util.Date lastLoginTime;//最后登录时间
 
+    private String salt;//盐值，md5加密是不能反解的，只能再加密一次验证一样不一样
+
+    public String getSalt() { return salt; }
+
+    public void setSalt(String salt) { this.salt = salt; }
 
     public String getUsername() {
         return username;

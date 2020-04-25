@@ -14,6 +14,7 @@
     <modules>
         <module>sparrow-service-seckill</module>
         <module>sparrow-service-user</module>
+        <module>sparrow-service-message</module>
     </modules>
 
 

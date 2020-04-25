@@ -14,6 +14,9 @@ spring:
     host: 47.93.203.220
   rabbitmq:
     host: 47.93.203.220
+    username: admin
+    password: admin
+    virtual-host: my_vhost
 eureka:
   client:
     service-url:

@@ -2,6 +2,7 @@ package com.edu.hnu.sparrow.service.user.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.edu.hnu.sparrow.common.entity.AuthToken;
+import com.edu.hnu.sparrow.common.util.CodecUtil;
 import com.edu.hnu.sparrow.common.util.JwtUtil;
 import com.edu.hnu.sparrow.service.user.dao.UserMapper;
 import com.edu.hnu.sparrow.service.user.pojo.User;
@@ -46,7 +47,9 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userMapper.selectByPrimaryKey(username);
         // 密码加密 BCrypt
-        if (user != null && BCrypt.checkpw(password, user.getPassword())) {
+//        if (user != null && BCrypt.checkpw(password, user.getPassword())) {
+        //用md5吧别用这个什么BC了
+        if (user != null && user.getPassword().equals(CodecUtil.md5Hex(password, user.getSalt()))) {
             // 用户校验通过，生成令牌，保存到客户端(cookie)
             // arg01:id唯一的ID  arg02: 载荷信息  arg03：token过期时间不设置默认一个小时
             Map<String, Object> map = new HashMap<>();

@@ -65,5 +65,14 @@ public interface UserService {
      */
     Page<User> findPage(Map<String, Object> searchMap, int page, int size);
 
+    //下面是用户注册的四个方法
+    boolean checkData(String data, Integer type);
+
+    boolean sendVerifyCode(String phone);
+
+    boolean register(User user, String code);
+
+    User queryUser(String username, String password);
+
 //    int updateUserPoint(Task task);
 }
