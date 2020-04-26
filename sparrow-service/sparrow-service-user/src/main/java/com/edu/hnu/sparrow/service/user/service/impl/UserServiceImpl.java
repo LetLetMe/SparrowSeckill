@@ -222,6 +222,7 @@ public class UserServiceImpl implements UserService {
 
 
     static final String KEY_PREFIX = "user:code:phone:";
+//    static final String KEY_PREFIX = "phone_code";
 
     static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
@@ -238,9 +239,14 @@ public class UserServiceImpl implements UserService {
 
             this.amqpTemplate.convertAndSend("mymall.sms.exchange", "sms.verify.code", msg);
 
-            System.out.println("code here!");
+
             // 将code存入redis
-            this.redisTemplate.opsForValue().set(KEY_PREFIX + phone, code, 5, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set(KEY_PREFIX + phone, code, 5, TimeUnit.MINUTES);
+
+
+
+            //hash结构中单个key不能设置过期时间
+//            redisTemplate.boundHashOps(KEY_PREFIX).put(phone,code);
             return true;
 
         } catch (Exception e) {
@@ -253,6 +259,7 @@ public class UserServiceImpl implements UserService {
         String key = KEY_PREFIX + user.getPhone();
         // 从redis取出验证码
         String codeCache = (String)this.redisTemplate.opsForValue().get(key);
+
         System.out.println(codeCache);
         // 检查验证码是否正确
         if (!code.equals(codeCache)) {
@@ -283,9 +290,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public User queryUser(String username, String password) {
         // 查询
-        User record = new User();
-        record.setUsername(username);
-        User user = this.userMapper.selectOne(record);
+
+        User user = this.userMapper.selectByPrimaryKey(username);
         // 校验用户名
         if (user == null) {
             return null;

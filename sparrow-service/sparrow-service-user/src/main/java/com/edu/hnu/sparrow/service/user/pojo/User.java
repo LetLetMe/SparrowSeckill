@@ -4,6 +4,7 @@ package com.edu.hnu.sparrow.service.user.pojo;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * user实体类
@@ -22,7 +23,8 @@ public class User implements Serializable {
     private String phone;//注册手机号
     private String email;//注册邮箱
     private java.util.Date created;//创建时间
-    private java.util.Date updated;//修改时间
+    //这个为啥不能为null？
+    private java.util.Date updated=new Date();//修改时间
     private String sourceType;//会员来源：1:PC，2：H5，3：Android，4：IOS
     private String nickName;//昵称
     private String name;//真实姓名
@@ -35,8 +37,8 @@ public class User implements Serializable {
     private Integer userLevel;//会员等级
     private Integer points;//积分
     private Integer experienceValue;//经验值
-    private java.util.Date birthday;//出生年月日
-    private java.util.Date lastLoginTime;//最后登录时间
+    private java.util.Date birthday=new Date();//出生年月日
+    private java.util.Date lastLoginTime=new Date();//最后登录时间
 
     private String salt;//盐值，md5加密是不能反解的，只能再加密一次验证一样不一样
 

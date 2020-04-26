@@ -3,12 +3,15 @@ package com.edu.hnu.sparrow.service.user.controller;
 import com.edu.hnu.sparrow.common.entity.AuthToken;
 import com.edu.hnu.sparrow.common.entity.Result;
 import com.edu.hnu.sparrow.common.entity.StatusCode;
+import com.edu.hnu.sparrow.service.user.pojo.User;
 import com.edu.hnu.sparrow.service.user.service.AuthService;
+import com.edu.hnu.sparrow.service.user.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -23,6 +26,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private UserService userService;
 //
 //    @Value("${auth.clientId}")
 //    private String clientId;
@@ -43,7 +49,7 @@ public class AuthController {
 //    }
 
 
-    @RequestMapping("/login")
+    @PostMapping("/login")
     @ResponseBody
     public Result login(String username, String password, HttpServletResponse httpServletResponse){
 
@@ -57,9 +63,16 @@ public class AuthController {
             return  new Result(false,StatusCode.ERROR,"请输入密码",null);
         }
         //申请令牌 authtoken
+
+
+        User user=userService.queryUser(username,password);
+        if(user==null){
+
+            return new Result(true, StatusCode.ERROR,"登录失败，用户不存在",null);
+        }
         AuthToken authToken = authService.login(username, password);
         if(authToken==null){
-            return  new Result(false,StatusCode.ERROR,"登陆失败",null);
+            return  new Result(false,StatusCode.ERROR,"登陆失败，申请token失败",null);
         }
 
         //将jti的值存入cookie中

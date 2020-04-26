@@ -57,7 +57,8 @@ public class RegisterController {
                            @RequestParam("code") String code,
                            @RequestParam("phone") String phone) {
         User user=new User();
-        user.setName(username);
+        //区分username和name
+        user.setUsername(username);
         user.setPassword(password);
         user.setPhone(phone);
         System.out.println(user);
