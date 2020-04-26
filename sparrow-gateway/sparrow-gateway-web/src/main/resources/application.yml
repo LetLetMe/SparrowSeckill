@@ -13,23 +13,37 @@ spring:
               - PUT
               - DELETE
       routes:
-#        - id: goods
-#          uri: lb://goods
-#          predicates:
-#            - Path=/goods/**
-#          filters:
-#            - StripPrefix= 1
-#            - name: RequestRateLimiter #请求数限流 名字不能随便写
-#              args:
-#                key-resolver: "#{@ipKeyResolver}"
-#                redis-rate-limiter.replenishRate: 1 #令牌桶每秒填充平均速率
-#                redis-rate-limiter.burstCapacity: 1 #令牌桶总容量
-#        - id: system
-#          uri: lb://system
-#          predicates:
-#            - Path=/system/**
-#          filters:
-#            - StripPrefix= 1
+          # 对接user服务
+          - id: sparrow-user
+            uri: lb://sparrow-user
+            predicates:
+              - Path=/api/user/**
+            filters:
+              - StripPrefix=2
+        # 这里边包含了关于商品等一切操作
+        # 包括 下单 查询订单状态 结账等
+          - id: sparrow-seckillgoods
+          uri: lb://sparrow-order
+          predicates:
+            - Path=/api/goods/**
+          filters:
+            - StripPrefix=2
+            - name: RequestRateLimiter #请求数限流 名字不能随便写 ，使用默认的facatory RequestRateLimiterGatewayFilterFactory
+                args:
+                  key-resolver: "#{@ipKeyResolver}" #用户唯一标识
+                  redis-rate-limiter.replenishRate: 10 #每秒钟允许多少个请求
+                  redis-rate-limiter.burstCapacity: 50 #允许并发有多少个请求
+          - id: sparrow-seckillorder
+              uri: lb://sparrow-order
+              predicates:
+                - Path=/api/order/**
+              filters:
+                - StripPrefix=2
+                - name: RequestRateLimiter
+                    args:
+                      key-resolver: "#{@ipKeyResolver}" #用户唯一标识
+                      redis-rate-limiter.replenishRate: 10 #每秒钟允许多少个请求
+                      redis-rate-limiter.burstCapacity: 50 #允许并发有多少个请求
   redis:
     host: 47.93.203.220
 server:

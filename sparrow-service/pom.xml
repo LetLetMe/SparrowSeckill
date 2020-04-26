@@ -15,6 +15,7 @@
         <module>sparrow-service-seckill</module>
         <module>sparrow-service-user</module>
         <module>sparrow-service-message</module>
+        <module>sparrow-pay</module>
     </modules>
 
 

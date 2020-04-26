@@ -37,20 +37,37 @@ public class RegisterController {
     public Result sendVerifyCode(String phone) {
         boolean boo = this.userService.sendVerifyCode(phone);
 
-        return new Result(boo, StatusCode.OK,"是否成功发送短信");
+        if(boo){
+            return new Result(boo, StatusCode.OK,"成功发送短信");
+        }
+        return new Result(boo, StatusCode.OK,"发送短信失败");
+
     }
 
     /**
      * 注册
-     * @param user
+     * @param
      * @param code
      * @return
      */
     @PostMapping("/register")
-    public Result register(@Valid User user, @RequestParam("code") String code) {
+//    public Result register(@Valid User user, @RequestParam("code") String code) {
+    public Result register(@RequestParam("username") String username,
+                           @RequestParam("password") String password,
+                           @RequestParam("code") String code,
+                           @RequestParam("phone") String phone) {
+        User user=new User();
+        user.setName(username);
+        user.setPassword(password);
+        user.setPhone(phone);
+        System.out.println(user);
+
         boolean boo = this.userService.register(user, code);
 
-        return new Result(boo, StatusCode.OK,"是否注册成功");
+        if(boo){
+            return new Result(boo, StatusCode.OK,"注册成功");
+        }
+        return new Result(boo, StatusCode.ERROR,"注册失败");
     }
 
     /**

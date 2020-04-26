@@ -20,10 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -232,6 +229,7 @@ public class UserServiceImpl implements UserService {
     public boolean sendVerifyCode(String phone) {
         // 生成验证码
         String code = NumberUtil.generateCode(6);
+        System.out.println(code);
         try {
             // 发送短信
             Map<String, String> msg = new HashMap<>();
@@ -240,6 +238,7 @@ public class UserServiceImpl implements UserService {
 
             this.amqpTemplate.convertAndSend("mymall.sms.exchange", "sms.verify.code", msg);
 
+            System.out.println("code here!");
             // 将code存入redis
             this.redisTemplate.opsForValue().set(KEY_PREFIX + phone, code, 5, TimeUnit.MINUTES);
             return true;
@@ -254,6 +253,7 @@ public class UserServiceImpl implements UserService {
         String key = KEY_PREFIX + user.getPhone();
         // 从redis取出验证码
         String codeCache = (String)this.redisTemplate.opsForValue().get(key);
+        System.out.println(codeCache);
         // 检查验证码是否正确
         if (!code.equals(codeCache)) {
             // 不正确，返回
