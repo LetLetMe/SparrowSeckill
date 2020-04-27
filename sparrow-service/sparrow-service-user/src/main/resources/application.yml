@@ -1,5 +1,3 @@
-server:
-  port: 9005
 spring:
   application:
     name: sparrow-user
@@ -8,8 +6,8 @@ spring:
     url: jdbc:mysql://47.93.203.220:3306/mymall_user?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
     username: root
     password: password
-  main:
-    allow-bean-definition-overriding: true #当遇到同样名字的时候，是否允许覆盖注册
+#  main:
+#    allow-bean-definition-overriding: true #当遇到同样名字的时候，是否允许覆盖注册
   redis:
     host: 47.93.203.220
   rabbitmq:
@@ -17,6 +15,8 @@ spring:
     username: admin
     password: admin
     virtual-host: my_vhost
+server:
+  port: 9005
 eureka:
   client:
     service-url:

@@ -28,10 +28,7 @@
 
 
 <!--        这三个加在这里是方便那个token解密配置的-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
+
 
 
 <!--        <dependency>-->

@@ -29,7 +29,8 @@ public class AuthService {
 
     //查询jwt
     public String getJwtFromRedis(String jti) {
-        String jwt = stringRedisTemplate.boundValueOps(LONG_TOKEN).get();
+//        String jwt = stringRedisTemplate.boundValueOps(LONG_TOKEN).get();
+        String jwt = (String)stringRedisTemplate.boundHashOps(LONG_TOKEN).get(jti);
         return jwt;
     }
 }

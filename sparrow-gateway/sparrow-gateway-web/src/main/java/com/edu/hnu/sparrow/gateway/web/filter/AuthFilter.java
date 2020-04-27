@@ -60,7 +60,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
         }
 
         //4.对当前的请求对象进行增强,让它会携带令牌的信息
-        request.mutate().header("Authorization","Bearer "+jwt);
+        request.mutate().header("Authorization",jwt);
         return chain.filter(exchange);
     }
 

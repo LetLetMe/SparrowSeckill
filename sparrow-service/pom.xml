@@ -16,6 +16,7 @@
         <module>sparrow-service-user</module>
         <module>sparrow-service-message</module>
         <module>sparrow-pay</module>
+        <module>sparrow-service-ordermessage</module>
     </modules>
 
 
@@ -31,11 +32,19 @@
 <!--            <artifactId>spring-cloud-starter-oauth2</artifactId>-->
 <!--        </dependency>-->
 
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>tk.mybatis</groupId>
             <artifactId>mapper-spring-boot-starter</artifactId>
             <version>2.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <!--MySQL数据库驱动-->
 
@@ -49,9 +58,6 @@
             <artifactId>pagehelper-spring-boot-starter</artifactId>
             <version>1.2.3</version>
         </dependency>
-
-
-<!--        redis-->
 
 
 <!--        jdk的工具包-->
