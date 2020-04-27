@@ -1,6 +1,7 @@
 package com.edu.hnu.sparrow.service.user.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.edu.hnu.sparrow.common.conts.CacheKey;
 import com.edu.hnu.sparrow.common.entity.AuthToken;
 import com.edu.hnu.sparrow.common.util.CodecUtil;
 import com.edu.hnu.sparrow.common.util.JwtUtil;
@@ -20,7 +21,6 @@ import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthService {
-    private static final String LONG_TOKEN="long_token";
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -49,7 +49,8 @@ public class AuthServiceImpl implements AuthService {
             String token = JwtUtil.createJWT(uuid, info, null);
 
             //把长的token存入redis，注意这里用到了一个hash命名空间
-            redisTemplate.boundHashOps(LONG_TOKEN).put(uuid,token);
+            //uuid作为jti了，勉强也行把
+            redisTemplate.boundHashOps(CacheKey.USER_JWT).put(uuid,token);
 
 
             AuthToken authToken=new AuthToken();

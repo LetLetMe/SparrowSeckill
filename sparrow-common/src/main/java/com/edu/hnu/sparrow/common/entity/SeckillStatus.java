@@ -19,7 +19,7 @@ public class SeckillStatus {
     //作用于超时订单回滚
     private Long goodsID;
 
-    //这里用这个数据类型存钱可能会有问题吧！
+
     private BigDecimal money;
 
     private Long orderID;

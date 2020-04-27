@@ -23,11 +23,12 @@ public interface SecKillGoodsService {
      */
     SeckillGoods one(String time ,Long id);
 
+
+
     /**
-     * 测试返回的数据到底是啥样的
-     * @param time
-     * @return
+     * 封装mapper中的几个数据
      */
-    List<SeckillGoods> testSelect(String time);
+    int updateById(SeckillGoods seckillGoods);
+    SeckillGoods getById(long id);
 
 }

@@ -21,8 +21,8 @@ public class SecKillGoodsController {
 
 
     //这里原版的获取主页的方式不是获取静态主页，而是从redis中查询指定时间范围内的数据
-    @RequestMapping("/list")
-    public Result<List<SeckillGoods>> list(@RequestParam("time") String time){
+    @RequestMapping("/list/{time}")
+    public Result<List<SeckillGoods>> list(@PathVariable("time") String time){
         List<SeckillGoods> seckillGoodsList = secKillGoodsService.list(time);
         return new Result<>(true, StatusCode.OK,"查询成功",seckillGoodsList);
     }
@@ -34,16 +34,12 @@ public class SecKillGoodsController {
         return new Result<List<Date>>(true,StatusCode.OK,"查询秒杀列表成功",dates);
     }
 
-    @PostMapping("/one")
+    @PostMapping("/one/{time}/{id}")
     //根据时间和id查询商品详情
-    public Result<SeckillGoods> one(String time,Long id){
+    public Result<SeckillGoods> one(@PathVariable("time") String time, @PathVariable("id") Long id){
         return new Result<SeckillGoods>(true,StatusCode.OK,"查询商品详情成功",secKillGoodsService.one(time,id));
     }
 
-    @GetMapping("/test")
-    public Result<List<SeckillGoods>> test(){
-        List<SeckillGoods> seckillGoodsList = secKillGoodsService.testSelect("asd");
-        return new Result<>(true, StatusCode.OK,"查询成功",seckillGoodsList);
-    }
+
 }
 

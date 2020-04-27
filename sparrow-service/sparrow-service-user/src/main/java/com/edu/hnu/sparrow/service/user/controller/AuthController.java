@@ -1,5 +1,6 @@
 package com.edu.hnu.sparrow.service.user.controller;
 
+import com.edu.hnu.sparrow.common.conts.Auth;
 import com.edu.hnu.sparrow.common.entity.AuthToken;
 import com.edu.hnu.sparrow.common.entity.Result;
 import com.edu.hnu.sparrow.common.entity.StatusCode;
@@ -22,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 @RequestMapping("/oauth")
 public class AuthController {
-    private static final String AUTHORIZATION="Authorization";
+
 
     @Autowired
     private AuthService authService;
@@ -76,7 +77,7 @@ public class AuthController {
         }
 
         //将jti的值存入cookie中
-        Cookie cookie = new Cookie(AUTHORIZATION, authToken.getJti());
+        Cookie cookie = new Cookie(Auth.AUTHORIZATION, authToken.getJti());
         cookie.setDomain("localhost"); //域名
         cookie.setPath("/"); //设置到跟路径下
 

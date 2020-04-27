@@ -49,6 +49,7 @@ public class SeckillApplication {
     }
 
 
+    //这个怎么玩？
 //    @Bean
 //    public TokenDecode tokenDecode(){
 //        return new TokenDecode();

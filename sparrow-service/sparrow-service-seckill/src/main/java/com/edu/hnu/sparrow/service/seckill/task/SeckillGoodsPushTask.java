@@ -2,6 +2,7 @@ package com.edu.hnu.sparrow.service.seckill.task;
 
 
 
+import com.edu.hnu.sparrow.common.conts.CacheKey;
 import com.edu.hnu.sparrow.common.util.DateUtil;
 import com.edu.hnu.sparrow.service.seckill.dao.SeckillGoodsMapper;
 import com.edu.hnu.sparrow.service.seckill.pojo.SeckillGoods;
@@ -26,9 +27,7 @@ public class SeckillGoodsPushTask {
     @Autowired
     private RedisTemplate redisTemplate;
 
-    public static final String SECKILL_GOODS_KEY="seckill_goods_";
 
-    public static final String SECKILL_GOODS_STOCK_COUNT_KEY="seckill_goods_stock_count_";
 
     @Scheduled(cron = "0/50 * * * * ?")
     public void  loadSecKillGoodsToRedis(){
@@ -53,7 +52,7 @@ public class SeckillGoodsPushTask {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
             //这里把data转化成字符串了，用于接下来存redis
-            String redisExtName = DateUtil.date2Str(dateMenu);
+            String time = DateUtil.date2Str(dateMenu);
 
             //构造查询条件第一步
             //构造example
@@ -71,7 +70,7 @@ public class SeckillGoodsPushTask {
 
 
             //这个.keys()方法可以获取到这个hash下的所有keys
-            Set keys = redisTemplate.boundHashOps(SECKILL_GOODS_KEY + redisExtName).keys();//key field value
+            Set keys = redisTemplate.boundHashOps(CacheKey.SEC_KILL_GOODS_PREFIX + time).keys();//key field value
 
             //构造条件的时候，居然可以直接把以前存在的东西给排除掉，数据库就不查了！但是这个sql估计会很长，mysql压力不小
             if (keys != null && keys.size()>0){
@@ -86,14 +85,20 @@ public class SeckillGoodsPushTask {
                 //redis的配置要写在application.yml中，springboot会自动识别，并注入redisTamplate
                 //操作redis，直接以商品的id作为hash结构中的key，以商品对象作为values，你直接传入对象，redisTemplate对帮你序列化
                 //这里redis中hash结构本身的key是  前缀+时间
-                redisTemplate.opsForHash().put(SECKILL_GOODS_KEY + redisExtName,seckillGoods.getId(),seckillGoods);
+                redisTemplate.opsForHash().put(CacheKey.SEC_KILL_GOODS_PREFIX + time,seckillGoods.getId(),seckillGoods);
                 //下边这种操作方式也行，后边那个put可以直接传入对象的
                 //redisTemplate.boundHashOps(SECKILL_GOODS_KEY+redisExtName).put(seckillGoods.getId(),seckillGoods);
 
 
-                //加载秒杀商品的库存
+                //加载秒杀商品的实际库存
+                //1. 区分id和goodsId 2. 由于redis 的string只能存string，所有这里要把库存值转换为string才行，当然取出来时候还要反解一下
+                redisTemplate.opsForValue().append(CacheKey.SECKKILL_GOODS_KUCUN+seckillGoods.getId(),String.valueOf(seckillGoods.getNum()));
+
                 //这个是把库存放入一个列表中，用于后来的秒杀减库存
-                redisTemplate.opsForValue().set(SECKILL_GOODS_STOCK_COUNT_KEY+seckillGoods.getId(),seckillGoods.getStockCount());
+                for(int i=0;i<seckillGoods.getNum();i++){
+                    redisTemplate.boundListOps(CacheKey.SECKILL_LINPAI).leftPush("1");
+                }
+
             }
         }
 

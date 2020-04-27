@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSON;
 //import com.changgou.seckill.config.RabbitMQConfig;
 
 
+import com.edu.hnu.sparrow.common.conts.CacheKey;
 import com.edu.hnu.sparrow.common.entity.SeckillStatus;
 import com.edu.hnu.sparrow.common.util.IdWorker;
 import com.edu.hnu.sparrow.service.seckill.dao.SeckillOrderMapper;
@@ -52,7 +53,7 @@ public class MultingThreadCreateOrder {
     @Async
     public void creadOrder(){
 
-        SeckillStatus seckillStatus=(SeckillStatus) redisTemplate.boundListOps(SECKILL_ORDER_LIST).rightPop();
+        SeckillStatus seckillStatus=(SeckillStatus) redisTemplate.boundListOps(CacheKey.SEC_KILL_USER_PAIDUI).rightPop();
         Long id=seckillStatus.getGoodsID();
         String time=seckillStatus.getTime();
         String username=seckillStatus.getUserName();
@@ -65,9 +66,9 @@ public class MultingThreadCreateOrder {
          * 4.基于mq完成mysql的数据同步,进行异步下单并扣减库存(mysql)
          */
         //防止用户恶意刷单
-        String result = this.preventRepeatCommit(username, id);
+
         //传入name和商品id，同一个商品同一个用户只能抢一次
-        if ("fail".equals(result)){
+        if (preventRepeatCommit(username)==null){
             //设置状态为抢单失败
             seckillStatus.setStatus(4);
             return ;
@@ -77,43 +78,43 @@ public class MultingThreadCreateOrder {
         SeckillOrder order = seckillOrderMapper.getOrderInfoByUserNameAndGoodsId(username, id);
         //同一个商品同一个用户防止重复下单
         if (order != null){
-            //设置状态为抢单失败
+            //删除排队信息
             seckillStatus.setStatus(4);
+
+
             return;
         }
 
 
         //获取商品信息
-        SeckillGoods seckillGoods = (SeckillGoods) redisTemplate.boundHashOps(SECKILL_GOODS_KEY+time).get(id);
+        SeckillGoods seckillGoods = (SeckillGoods) redisTemplate.boundHashOps(CacheKey.SEC_KILL_GOODS_PREFIX+time).get(id);
 
         //获取库存信息
-        String redisStock = (String) redisTemplate.opsForValue().get(SECKILL_GOODS_STOCK_COUNT_KEY+id);
+        String redisStock = (String) redisTemplate.opsForValue().get(CacheKey.SECKKILL_GOODS_KUCUN+id);
+
         if (StringUtils.isEmpty(redisStock)){
-            //设置状态为抢单失败
+            //删除排队信息
+            //如何区分是抢了没强成功，还是根本就没抢呢？
+            //这里设置排队信息以后，用户再查询，如果是4，会删除
             seckillStatus.setStatus(4);
+
             return ;
         }
+
         int stock = Integer.parseInt(redisStock);
         //如果库存为0的化后续的直接就退出了，但是这里无法阻止高并发
         if (seckillGoods == null || stock<=0){
             //设置状态为抢单失败
             seckillStatus.setStatus(4);
+
             return ;
         }
 
-        //执行redis的预扣减库存,并获取到扣减之后的库存值
-        //decrement:减 increment:加     ->    Lua脚本语言
-        Long decrement = redisTemplate.opsForValue().decrement(SECKILL_GOODS_STOCK_COUNT_KEY + id);
-        if (decrement<=0){
-            //扣减完库存之后,当前商品已经没有库存了.
-            //删除redis中的商品信息与库存信息
-            redisTemplate.boundHashOps(SECKILL_GOODS_KEY+time).delete(id);
-            redisTemplate.delete(SECKILL_GOODS_STOCK_COUNT_KEY + id);
-            //下边这种可能是常规下单操作，秒杀这样搞简直就是作死
-//            //而且要把商品信息落盘（要是有人下单不结账怎么办？）
-//            //而且这里超卖了怎么办？
-//            seckillGoods.setStockCount(0);
-//            seckillGoodsMapper.updateByPrimaryKeySelective(seckillGoods);
+        //尝试获取令牌
+        String lingpai=(String)redisTemplate.boundListOps(CacheKey.SECKILL_LINPAI).rightPop();
+        if(lingpai==null){
+            redisTemplate.boundHashOps(CacheKey.SECKILL_USER_CHONGFU_PAIDUI).delete(username);
+            return;
         }
 
         //发送消息(保证消息生产者对于消息的不丢失实现)
@@ -127,45 +128,27 @@ public class MultingThreadCreateOrder {
         seckillOrder.setCreateTime(new Date());
         seckillOrder.setStatus("0");
 
+        //这三部都很重要！这才是实际的抢到单以后的status信息
         //改变redis中的订单信息
         seckillStatus.setStatus(3);
         //设置需要支付的金额
         //这里用到的数据类型是BigDicimal
         seckillStatus.setMoney(seckillGoods.getCostPrice());
         //更新订单号
+        //这一步很重要！
         seckillStatus.setOrderID(seckillOrder.getId());
 
-        redisTemplate.boundHashOps(SECKILL_ORDER_HASH).put(username,seckillGoods);
+        redisTemplate.boundHashOps(CacheKey.SECKILL_USER_CHONGFU_PAIDUI).put(username,seckillGoods);
 
 
-        //当然你把订单信息先落盘到redis好像也可以
-        //hash中每个key对应的value直接存对象即可！
-        //redisTemplate.boundHashOps(SECKILL_ORDER_KEY).put(username,order);
 
-        //发送消息
-        //秒杀订单不能立即落盘mysql，而是发到mq中，等到支付以后再异步落盘，但是redis中的库存是立马就减掉了的
-//        confirmMessageSender.sendMessage("", RabbitMQConfig.SECKILL_ORDER_QUEUE, JSON.toJSONString(seckillOrder));
-
-        return  ;
+        return ;
     }
 
-    private String preventRepeatCommit(String username,Long id){
-        String redis_key = "seckill_user_"+username+"_id_"+id;
+    private SeckillOrder preventRepeatCommit(String username){
+        SeckillOrder seckillOrder=(SeckillOrder) redisTemplate.boundHashOps(CacheKey.SECKILL_USER_CHONGFU_PAIDUI).get(username);
+        return  seckillOrder;
 
-        //自增可以每个用户搞一个string类型，也可以把他们合在一个hash结构中，hash中的每个key都可以原子自增的
-        long count = redisTemplate.opsForValue().increment(redis_key, 1);
-        if (count == 1){
-            //代表当前用户是第一次访问.
-            //对当前的key设置一个五分钟的有效期
-            redisTemplate.expire(redis_key,5, TimeUnit.MINUTES);
-            return "success";
-        }
-
-        if (count>1){
-            return "fail";
-        }
-
-        return "fail";
     }
 }
 

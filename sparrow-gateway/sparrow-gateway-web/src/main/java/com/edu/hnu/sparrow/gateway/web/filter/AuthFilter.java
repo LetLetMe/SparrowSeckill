@@ -2,6 +2,8 @@ package com.edu.hnu.sparrow.gateway.web.filter;
 
 
 
+import com.edu.hnu.sparrow.common.conts.Auth;
+import com.edu.hnu.sparrow.common.conts.CacheKey;
 import com.edu.hnu.sparrow.gateway.web.exception.NoLogException;
 import com.edu.hnu.sparrow.gateway.web.service.AuthService;
 import org.apache.commons.lang.StringUtils;
@@ -60,7 +62,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
         }
 
         //4.对当前的请求对象进行增强,让它会携带令牌的信息
-        request.mutate().header("Authorization",jwt);
+        request.mutate().header(Auth.AUTHORIZATION,jwt);
         return chain.filter(exchange);
     }
 
