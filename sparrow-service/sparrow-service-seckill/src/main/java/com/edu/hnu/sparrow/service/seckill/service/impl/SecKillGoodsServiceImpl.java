@@ -113,12 +113,15 @@ public class SecKillGoodsServiceImpl implements SecKillGoodsService {
         seckillGoods.setGoodsId(idWorker.nextId());
         //skuID
         seckillGoods.setId(idWorker.nextId());
+
         //商品添加时间
         seckillGoods.setCreateTime(new Date());
         //开始时间
         seckillGoods.setStartTime(startTime);
         //设置结束时间
-        seckillGoods.setEndTime(DateUtil.addDateHour(new Date(),1));
+//        seckillGoods.setEndTime(DateUtil.addDateHour(new Date(),1));
+        //这里设置的太长了不方便测试
+        seckillGoods.setEndTime(DateUtil.addDateMinutes(new Date(),5));
         //商品描述
         seckillGoods.setTitle("测试商品"+startTime.toString());
         //设置审核状态

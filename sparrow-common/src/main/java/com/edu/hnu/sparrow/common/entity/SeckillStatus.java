@@ -17,7 +17,7 @@ public class SeckillStatus implements Serializable {
     private Integer status;
 
     //作用于超时订单回滚
-    private Long goodsID;
+    private Long id;
 
 
     private BigDecimal money;
@@ -52,12 +52,12 @@ public class SeckillStatus implements Serializable {
         this.status = status;
     }
 
-    public Long getGoodsID() {
-        return goodsID;
+    public Long getId() {
+        return id;
     }
 
-    public void setGoodsID(Long goodsID) {
-        this.goodsID = goodsID;
+    public void setId(Long goodsID) {
+        this.id = goodsID;
     }
 
     public BigDecimal getMoney() {
@@ -80,7 +80,21 @@ public class SeckillStatus implements Serializable {
         return time;
     }
 
+    @Override
+    public String toString() {
+        return "SeckillStatus{" +
+                "userName='" + userName + '\'' +
+                ", createTime=" + createTime +
+                ", status=" + status +
+                ", goodsID=" + id +
+                ", money=" + money +
+                ", orderID=" + orderID +
+                ", time='" + time + '\'' +
+                '}';
+    }
+
     public void setTime(String time) {
         this.time = time;
     }
+
 }

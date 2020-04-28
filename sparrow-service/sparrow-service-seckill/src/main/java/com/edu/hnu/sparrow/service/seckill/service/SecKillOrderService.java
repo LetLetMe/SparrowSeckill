@@ -12,7 +12,7 @@ public interface SecKillOrderService {
      * @param username
      * @return
      */
-    boolean add(Long id,String time,String username);
+    SeckillStatus add(Long id,String time,String username);
 
     /**
      * 状态查询,这里还要传入哪来个参数，用户页面其实会阻塞在等待状态，然后后台调用这个接口，就是插叙此次抢购的商品是否完成下单

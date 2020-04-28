@@ -1,10 +1,10 @@
 server:
-  port: 9016
+  port: 9017
 spring:
   jackson:
     time-zone: GMT+8
   application:
-    name: sparrow-order
+    name: sparrow-pay
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://47.93.203.220:3306/mymall_seckill?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2b8
@@ -14,11 +14,7 @@ spring:
     allow-bean-definition-overriding: true #当遇到同样名字的时候，是否允许覆盖注册
   redis:
     host: 47.93.203.220
-  rabbitmq:
-    host: 47.93.203.220
-    username: admin
-    password: admin
-    virtual-host: my_vhost
+
 eureka:
   client:
     service-url:

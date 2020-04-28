@@ -2,6 +2,7 @@ package com.edu.hnu.sparrow.service.seckill.task;
 
 
 
+import com.alibaba.fastjson.JSON;
 import com.edu.hnu.sparrow.common.conts.CacheKey;
 import com.edu.hnu.sparrow.common.util.DateUtil;
 import com.edu.hnu.sparrow.service.seckill.dao.SeckillGoodsMapper;
@@ -53,8 +54,6 @@ public class SeckillGoodsPushTask {
 
             //这里把data转化成字符串了，用于接下来存redis
             String time = DateUtil.date2Str(dateMenu);
-
-            System.out.println(time);
             //构造查询条件第一步
             //构造example
             Example example = new Example(SeckillGoods.class);
@@ -86,10 +85,11 @@ public class SeckillGoodsPushTask {
             //添加到缓存中
             for (SeckillGoods seckillGoods : seckillGoodsList) {
                 System.out.println(seckillGoods);
-                //redis的配置要写在application.yml中，springboot会自动识别，并注入redisTamplate
-                //操作redis，直接以商品的id作为hash结构中的key，以商品对象作为values，你直接传入对象，redisTemplate对帮你序列化
-                //这里redis中hash结构本身的key是  前缀+时间
-                redisTemplate.opsForHash().put(CacheKey.SEC_KILL_GOODS_PREFIX + time,seckillGoods.getId(),seckillGoods);
+
+                //这种方式插入json不能反解决
+//                redisTemplate.opsForHash().put(CacheKey.SEC_KILL_GOODS_PREFIX + time,seckillGoods.getId(), JSON.toJSONString(seckillGoods));
+                //这种方式插入json可以反解
+                redisTemplate.boundHashOps(CacheKey.SEC_KILL_GOODS_PREFIX + time).put( seckillGoods.getId(),JSON.toJSONString(seckillGoods));
                 //下边这种操作方式也行，后边那个put可以直接传入对象的
                 //redisTemplate.boundHashOps(SECKILL_GOODS_KEY+redisExtName).put(seckillGoods.getId(),seckillGoods);
 
