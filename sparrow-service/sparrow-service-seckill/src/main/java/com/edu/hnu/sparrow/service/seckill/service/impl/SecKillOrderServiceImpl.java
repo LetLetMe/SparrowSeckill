@@ -1,5 +1,6 @@
 package com.edu.hnu.sparrow.service.seckill.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.edu.hnu.sparrow.common.entity.SeckillStatus;
 import com.edu.hnu.sparrow.common.conts.CacheKey;
 import com.edu.hnu.sparrow.common.util.IdWorker;
@@ -47,17 +48,21 @@ public class SecKillOrderServiceImpl implements SecKillOrderService {
         seckillStatus.setGoodsID(id);
         seckillStatus.setTime(time);
         seckillStatus.setCreateTime(new Date());
+        seckillStatus.setUserName(username);
 
 
         //放入排队队列中
         //所有商品一个总的排队队列
-        redisTemplate.boundListOps(CacheKey.SEC_KILL_USER_PAIDUI).leftPush(seckillStatus);
+//        redisTemplate.boundListOps(CacheKey.SEC_KILL_USER_PAIDUI).leftPush(seckillStatus);
+        redisTemplate.boundListOps(CacheKey.SEC_KILL_USER_PAIDUI).leftPush(JSON.toJSONString(seckillStatus));
+
+
 
         //防止重复排队
         //所有用户一个重复排队的hash
         //住了status记录的订单id是假的,
         //1. 生成订单时候改一次订单号 改状态  2. 支付以后改一次 状态
-        redisTemplate.boundHashOps(CacheKey.SECKILL_USER_CHONGFU_PAIDUI).put(username,seckillStatus);
+        redisTemplate.boundHashOps(CacheKey.SECKILL_USER_CHONGFU_PAIDUI).put(username,JSON.toJSONString(seckillStatus));
 
         multingThreadCreateOrder.creadOrder();
         //真正想实现异步抢单，还是用mq靠谱

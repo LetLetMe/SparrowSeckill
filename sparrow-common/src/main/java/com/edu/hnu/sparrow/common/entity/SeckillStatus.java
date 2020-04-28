@@ -1,14 +1,14 @@
 package com.edu.hnu.sparrow.common.entity;
 
 
+import java.io.Serializable;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.Date;
 
 /**
  * 用户排队抢单信息
  */
-public class SeckillStatus {
+public class SeckillStatus implements Serializable {
     private String userName;
 
     private Date createTime;

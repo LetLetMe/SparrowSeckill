@@ -40,6 +40,18 @@ public class SecKillGoodsController {
         return new Result<SeckillGoods>(true,StatusCode.OK,"查询商品详情成功",secKillGoodsService.one(time,id));
     }
 
+    @GetMapping("/newData")
+    public Result<SeckillGoods> newDate(){
+        Date date=new Date();
+        SeckillGoods seckillGoods=secKillGoodsService.addGoods(date);
+        if(seckillGoods==null){
+            return new Result<SeckillGoods>(true,StatusCode.OK,"添加商品失败",null);
+        }else {
+            return new Result<SeckillGoods>(true,StatusCode.OK,"添加商品成功",seckillGoods);
+        }
+
+    }
+
 
 }
 

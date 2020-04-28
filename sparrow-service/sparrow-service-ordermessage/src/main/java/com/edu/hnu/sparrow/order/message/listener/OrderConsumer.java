@@ -2,9 +2,6 @@ package com.edu.hnu.sparrow.order.message.listener;
 
 
 
-import cn.hutool.core.date.DateUtil;
-import com.alibaba.fastjson.JSON;
-
 import com.edu.hnu.sparrow.common.conts.CacheKey;
 import com.edu.hnu.sparrow.common.entity.MQConstants;
 import com.edu.hnu.sparrow.common.entity.SeckillStatus;
@@ -33,8 +30,7 @@ import java.util.Map;
 public class OrderConsumer {
     @Autowired
     private RedisTemplate redisTemplate;
-    @Autowired
-    private SecKillOrderService seckillOrderService;
+
     @Autowired
     private SecKillGoodsService seckillGoodsService;
 
@@ -50,63 +46,52 @@ public class OrderConsumer {
                     type = ExchangeTypes.TOPIC),
             key = {MQConstants.SECKILL_PAY_SUCCESS_ROUTING_KEY}
     ))
-    public void updateOrderStatus(Map<String, String> msg) {
-        //通信标识 return_code  //业务结果 result_code
-        //3.判断 是否成功(通信是否成)
+    public void updateOrderStatus(String msg) {
+
+
         if (msg != null) {
-            String return_code = msg.get("return_code");
-            if ("SUCCESS".equalsIgnoreCase(return_code)) {
-                String result_code = msg.get("result_code");
-                String attach = msg.get("attach");//json格式的字符串 (里面有用户名信息)
-                Map<String, String> attachMap = JSON.parseObject(attach, Map.class);
-                String username = attachMap.get("username");
+            String username=msg;
 
                 //获取seckillstatus 状态信息
-                SeckillStatus seckillStatus = (SeckillStatus) redisTemplate.boundHashOps(CacheKey.SEC_KILL_QUEUE_REPEAT_KEY).get(username);
+                SeckillStatus seckillStatus = (SeckillStatus) redisTemplate.boundHashOps(CacheKey.SECKILL_USER_CHONGFU_PAIDUI).get(username);
 
+                //取到了就能直接删除排队信息了
+                redisTemplate.boundHashOps(CacheKey.SECKILL_USER_CHONGFU_PAIDUI).delete(username);
 
-                if ("SUCCESS".equalsIgnoreCase(result_code)) {
-                    //4.判断业务状态是否成功  如果 成功  1.删除预订单 2.同步到数据库 3.删除排队标识 4.删除状态信息
-                    //4.1 根据用户名redis中获取订单的数据
-                    SeckillOrder seckillOrder = (SeckillOrder) redisTemplate.boundHashOps(CacheKey.SEC_KILL_QUEUE_REPEAT_KEY).get(username);
-                    //4.2 删除预订单
-                    redisTemplate.boundHashOps(CacheKey.SEC_KILL_QUEUE_REPEAT_KEY).delete(username);
-                    //4.3 同步到数据库中
-                    //订单这个时候才落库！
-                    seckillOrder.setStatus("1");//已经支付
-                    seckillOrder.setPayTime(DateUtil.parse(msg.get("time_end"), "yyyyMMddHHmmss"));
-                    seckillOrder.setTransactionId(msg.get("transaction_id"));
-                    seckillOrderService.save(seckillOrder);
-
-                    //4.4 删除 防止重复排队的标识
-                    redisTemplate.boundHashOps(CacheKey.SEC_KILL_QUEUE_REPEAT_KEY).delete(username);
+                if (seckillStatus!=null) {
+                    //如果没有查询到，那说明订单支付了，不需要操作
 
 
                 } else {
-                    //关闭微信订单  判断微信关闭订单的状态(1,已支付:调用方法 更新数据到数据库中.2 调用成功:(关闭订单成功:执行删除订单的业务 ) 3.系统错误: 人工处理.   )
-                    //5.判断业务状态是否成功  如果 不成功 1.删除预订单 2.恢复库存 3.删除排队标识 4.删除状态信息
-                    SeckillOrder seckillOrder = (SeckillOrder) redisTemplate.boundHashOps(CacheKey.SEC_KILL_QUEUE_REPEAT_KEY).get(username);
-                    redisTemplate.boundHashOps(CacheKey.SEC_KILL_QUEUE_REPEAT_KEY).delete(username);
 
-                    // 2.恢复库存  压入商品的超卖的问题的队列中
-                    redisTemplate.boundListOps(CacheKey.SECKILL_GOODS_STOCK_COUNT_KEY + seckillOrder.getSeckillId()).leftPush(seckillOrder.getSeckillId());
+                    //如果查到了，说明没有支付，才需要回滚库存
+                    //删除预订单
+                    redisTemplate.boundHashOps(CacheKey.SECKILL_QUEUE_REPEAT).delete(username);
 
-                    //2.恢复库存  获取商品的数据 商品的库存+1
-                    SeckillGoods seckillGoods = (SeckillGoods) redisTemplate.boundHashOps(CacheKey.SEC_KILL_GOODS_PREFIX + seckillStatus.getTime()).get(seckillOrder.getSeckillId());
-                    if (seckillGoods == null) {//说明你买的是最后一个商品 在redis中被删除掉了
-                        seckillGoods = seckillGoodsService.getById(seckillOrder.getSeckillId());
+                    //2.恢复库存  先尝试在内存中恢复库存
+                    //因为你一个商品秒杀完了，你肯定要删除的，不然给用户展示个库存为0不合适
+                    SeckillGoods seckillGoods = (SeckillGoods) redisTemplate.boundHashOps(CacheKey.SEC_KILL_GOODS_PREFIX + seckillStatus.getTime()).get(seckillStatus.getGoodsID());
+
+                    //3. 如果内存中的已经被删除了，那么就从数据库获取
+                    // 说明你买的是最后一个商品 在redis中被删除掉了
+                    if (seckillGoods == null) {
+                        //重新设置商品，设置库存
+                        seckillGoods = seckillGoodsService.getById(seckillStatus.getGoodsID());
+                        //这里可能出现线程不安全问题，但是这个库存是假的，不准确无所谓
+                        seckillGoods.setStockCount(seckillGoods.getStockCount()+1);
+                        redisTemplate.opsForHash().put(CacheKey.SEC_KILL_GOODS_PREFIX + seckillStatus.getTime(),seckillGoods.getId(),seckillGoods);
+
+                        //原子增加库存
+                        //这个库存不能删除的，即使减少为0也不行
+                        redisTemplate.opsForValue().increment(CacheKey.SECKKILL_GOODS_KUCUN+seckillGoods.getId());
                     }
-                    Long increment = redisTemplate.boundHashOps(CacheKey.SECK_KILL_GOODS_COUNT_KEY).increment(seckillOrder.getSeckillId(), 1);
-                    seckillGoods.setStockCount(increment.intValue());
-                    //更新数据的库存
-                    seckillGoodsService.updateById(seckillGoods);
 
-                    //3 删除 防止重复排队的标识
-                    redisTemplate.boundHashOps(CacheKey.SEC_KILL_QUEUE_REPEAT_KEY).delete(username);
+
+
 
 
                 }
             }
         }
     }
-}
+

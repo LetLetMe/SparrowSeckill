@@ -29,7 +29,7 @@ public class SeckillGoodsPushTask {
 
 
 
-    @Scheduled(cron = "0/50 * * * * ?")
+    @Scheduled(cron = "0/30 * * * * ?")
     public void  loadSecKillGoodsToRedis(){
         /**
          * 1.查询所有符合条件的秒杀商品
@@ -54,6 +54,7 @@ public class SeckillGoodsPushTask {
             //这里把data转化成字符串了，用于接下来存redis
             String time = DateUtil.date2Str(dateMenu);
 
+            System.out.println(time);
             //构造查询条件第一步
             //构造example
             Example example = new Example(SeckillGoods.class);
@@ -64,9 +65,11 @@ public class SeckillGoodsPushTask {
             criteria.andEqualTo("status","1");
             criteria.andGreaterThan("stockCount",0);
             //注意java中的时间和数据库中的时间怎么做比较
-            criteria.andGreaterThanOrEqualTo("startTime",simpleDateFormat.format(dateMenu));
+            //原来怎么可能能和string比啊，应该直接和data比
+//            criteria.andGreaterThanOrEqualTo("startTime",simpleDateFormat.format(dateMenu));
+            criteria.andGreaterThanOrEqualTo("startTime",dateMenu);
             //这里提供了一个工具类，可以加2小时，返回一个data对象
-            criteria.andLessThan("endTime",simpleDateFormat.format(DateUtil.addDateHour(dateMenu,2)));
+            criteria.andLessThan("endTime",DateUtil.addDateHour(dateMenu,2));
 
 
             //这个.keys()方法可以获取到这个hash下的所有keys
@@ -82,6 +85,7 @@ public class SeckillGoodsPushTask {
 
             //添加到缓存中
             for (SeckillGoods seckillGoods : seckillGoodsList) {
+                System.out.println(seckillGoods);
                 //redis的配置要写在application.yml中，springboot会自动识别，并注入redisTamplate
                 //操作redis，直接以商品的id作为hash结构中的key，以商品对象作为values，你直接传入对象，redisTemplate对帮你序列化
                 //这里redis中hash结构本身的key是  前缀+时间

@@ -4,6 +4,7 @@ package com.edu.hnu.sparrow.service.seckill.service;
 
 import com.edu.hnu.sparrow.service.seckill.pojo.SeckillGoods;
 
+import java.util.Date;
 import java.util.List;
 
 public interface SecKillGoodsService {
@@ -30,5 +31,7 @@ public interface SecKillGoodsService {
      */
     int updateById(SeckillGoods seckillGoods);
     SeckillGoods getById(long id);
+
+    SeckillGoods addGoods(Date startTime);
 
 }

@@ -3,6 +3,8 @@ package com.edu.hnu.sparrow.service.seckill.service.impl;
 
 
 import com.edu.hnu.sparrow.common.conts.CacheKey;
+import com.edu.hnu.sparrow.common.util.DateUtil;
+import com.edu.hnu.sparrow.common.util.IdWorker;
 import com.edu.hnu.sparrow.service.seckill.dao.SeckillGoodsMapper;
 import com.edu.hnu.sparrow.service.seckill.dao.SeckillOrderMapper;
 import com.edu.hnu.sparrow.service.seckill.pojo.SeckillGoods;
@@ -10,7 +12,11 @@ import com.edu.hnu.sparrow.service.seckill.service.SecKillGoodsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.unit.DataUnit;
 
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -21,6 +27,13 @@ public class SecKillGoodsServiceImpl implements SecKillGoodsService {
 
     @Autowired
     private SeckillGoodsMapper seckillGoodsMapper;
+
+    //这个是用来生成spu和sku的id的
+    @Autowired
+    private IdWorker idWorker;
+
+    //设置日期的
+    private  SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     //秒杀商品主页的信息没有做静态化，而是每次从redis中查询
     //这里给你吧时区传入了，至于前端怎么计算时区那是前端端事情，要保证前后端计算端计算格式一致性
@@ -54,13 +67,16 @@ public class SecKillGoodsServiceImpl implements SecKillGoodsService {
         //从redis查出来的都是object，要转换成你需要的类型
         //这里还需要查询一下库存，吧库存装进去
 //        seckillGoods.setStockCount((Integer)redisTemplate.opsForValue().get(SECKILL_GOODS_STOCK_COUNT_KEY+seckillGoods.getId()));
-        String value = (String) redisTemplate.boundHashOps(CacheKey.SECKKILL_GOODS_KUCUN).get(seckillGoods.getId());
+//        String value = (String) redisTemplate.boundHashOps(CacheKey.SECKKILL_GOODS_KUCUN).get(seckillGoods.getId());
+        //放在hash结构中无法原子减少
+        String value = (String) redisTemplate.opsForValue().get(CacheKey.SECKKILL_GOODS_KUCUN+seckillGoods.getId());
         seckillGoods.setStockCount(Integer.parseInt(value));
         return  seckillGoods;
     }
     /**
      * 封装mapper中的一些操作，mapper直接暴露给controller不太妥
      */
+    @Override
     public int updateById(SeckillGoods seckillGoods){
         int target =seckillGoodsMapper.updateByPrimaryKey(seckillGoods);
 
@@ -72,8 +88,44 @@ public class SecKillGoodsServiceImpl implements SecKillGoodsService {
      * @param id
      * @return
      */
+    @Override
     public SeckillGoods getById(long id){
         SeckillGoods seckillGoods=seckillGoodsMapper.selectByPrimaryKey(id);
+        return  seckillGoods;
+    }
+
+    /**
+     * 添加秒杀商品
+     */
+
+    @Override
+    public SeckillGoods addGoods(Date startTime){
+
+
+        SeckillGoods seckillGoods=new SeckillGoods();
+        //总共参与秒杀的商品数
+        seckillGoods.setNum(100);
+        //初始库存
+        seckillGoods.setStockCount(100);
+        //价格
+        seckillGoods.setCostPrice(new BigDecimal("100"));
+        //spuID
+        seckillGoods.setGoodsId(idWorker.nextId());
+        //skuID
+        seckillGoods.setId(idWorker.nextId());
+        //商品添加时间
+        seckillGoods.setCreateTime(new Date());
+        //开始时间
+        seckillGoods.setStartTime(startTime);
+        //设置结束时间
+        seckillGoods.setEndTime(DateUtil.addDateHour(new Date(),1));
+        //商品描述
+        seckillGoods.setTitle("测试商品"+startTime.toString());
+        //设置审核状态
+        seckillGoods.setStatus("1");
+
+        seckillGoodsMapper.insert(seckillGoods);
+
         return  seckillGoods;
     }
 }

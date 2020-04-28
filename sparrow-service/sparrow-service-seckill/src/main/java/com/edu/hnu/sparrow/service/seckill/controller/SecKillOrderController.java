@@ -2,6 +2,7 @@ package com.edu.hnu.sparrow.service.seckill.controller;
 
 
 
+import com.edu.hnu.sparrow.common.conts.Auth;
 import com.edu.hnu.sparrow.common.entity.Result;
 import com.edu.hnu.sparrow.common.entity.SeckillStatus;
 import com.edu.hnu.sparrow.common.entity.StatusCode;
@@ -19,15 +20,15 @@ public class SecKillOrderController {
     @Autowired
     private SecKillOrderService secKillOrderService;
 
-    @RequestMapping("/add/{time}/{id}")
+    @GetMapping("/add/{time}/{id}")
     public Result add(@PathVariable("time") String time,
-                      @PathVariable("id") Long id,
-                      @RequestHeader(value="Accept-Language") String language){
+                      @PathVariable("id") Long id){
+//                      @RequestHeader(value= Auth.AUTHORIZATION) String auth){
         //1.动态获取到当前的登录人
         //这里是根据cookie来解密获取username的，这里怎么获取到cookie的呢？
 //        String username = tokenDecode.getUserInfo().get("username");
         //上边这个怎么玩？
-        String username = "huyitao";
+        String username = "allen";
 
         //2.基于业务层进行秒杀下单
         boolean result = secKillOrderService.add(id, time, username);
