@@ -10,12 +10,16 @@ import com.edu.hnu.sparrow.service.seckill.service.SecKillOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+
 @RestController
 @RequestMapping("/seckillorder")
 public class SecKillOrderController {
 
-//    @Autowired
-//    private TokenDecode tokenDecode;
+
+
+
 
     @Autowired
     private SecKillOrderService secKillOrderService;
