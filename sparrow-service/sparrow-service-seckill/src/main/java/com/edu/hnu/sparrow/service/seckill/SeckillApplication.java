@@ -4,6 +4,7 @@ import com.edu.hnu.sparrow.common.util.IdWorker;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -20,6 +21,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 //这个是用来支持多线程异步任务的
 @EnableAsync
 public class SeckillApplication {
+
 
     public static void main(String[] args) {
         SpringApplication.run(SeckillApplication.class,args);
