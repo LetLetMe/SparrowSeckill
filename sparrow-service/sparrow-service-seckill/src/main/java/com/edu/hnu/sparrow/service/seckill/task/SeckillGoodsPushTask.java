@@ -31,6 +31,7 @@ public class SeckillGoodsPushTask {
 
 
     @Scheduled(cron = "0/30 * * * * ?")
+//    @Scheduled(cron = "0 */3 * * * ?")
     public void  loadSecKillGoodsToRedis(){
         /**
          * 1.查询所有符合条件的秒杀商品
@@ -96,11 +97,15 @@ public class SeckillGoodsPushTask {
 
                 //加载秒杀商品的实际库存
                 //1. 区分id和goodsId 2. 由于redis 的string只能存string，所有这里要把库存值转换为string才行，当然取出来时候还要反解一下
-                redisTemplate.opsForValue().append(CacheKey.SECKKILL_GOODS_KUCUN+seckillGoods.getId(),String.valueOf(seckillGoods.getNum()));
+                redisTemplate.opsForValue().append(CacheKey.SECKKILL_GOODS_KUCUN+seckillGoods.getId(),JSON.toJSONString(seckillGoods.getNum()));
 
+                System.out.println(seckillGoods.getId());
+                System.out.println(seckillGoods.getNum());
                 //这个是把库存放入一个列表中，用于后来的秒杀减库存
                 for(int i=0;i<seckillGoods.getNum();i++){
-                    redisTemplate.boundListOps(CacheKey.SECKILL_LINPAI).leftPush("1");
+
+                    redisTemplate.boundListOps(CacheKey.SECKILL_LINPAI+seckillGoods.getId()).leftPush("1");
+
                 }
 
             }

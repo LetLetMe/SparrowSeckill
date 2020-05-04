@@ -103,6 +103,10 @@ public class SecKillGoodsServiceImpl implements SecKillGoodsService {
 
 
         SeckillGoods seckillGoods=new SeckillGoods();
+
+        //总的id
+        seckillGoods.setId(idWorker.nextId());
+
         //总共参与秒杀的商品数
         seckillGoods.setNum(100);
         //初始库存
@@ -111,8 +115,7 @@ public class SecKillGoodsServiceImpl implements SecKillGoodsService {
         seckillGoods.setCostPrice(new BigDecimal("100"));
         //spuID
         seckillGoods.setGoodsId(idWorker.nextId());
-        //skuID
-        seckillGoods.setId(idWorker.nextId());
+
 
         //商品添加时间
         seckillGoods.setCreateTime(new Date());

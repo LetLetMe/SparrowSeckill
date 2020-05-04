@@ -11,12 +11,18 @@
 
     <artifactId>sparrow-gateway-web</artifactId>
 
-    <dependencies>
 
-<!--        <dependency>-->
-<!--            <groupId>org.apache.tomcat.embed</groupId>-->
-<!--            <artifactId>tomcat-embed-core</artifactId>-->
-<!--        </dependency>-->
-    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.edu.hnu.sparrow.gateway.web.WebGatewayApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

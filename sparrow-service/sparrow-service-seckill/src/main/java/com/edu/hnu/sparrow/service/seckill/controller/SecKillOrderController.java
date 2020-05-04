@@ -12,41 +12,40 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @RestController
 @RequestMapping("/seckillorder")
 public class SecKillOrderController {
 
-
-
-
-
-
     @Autowired
     private SecKillOrderService secKillOrderService;
 
-    @GetMapping("/add/{time}/{id}/{name}")
+//    @GetMapping("/add/{time}/{id}/{name}")
+    @GetMapping("/add/{time}/{id}")
     public Result add(@PathVariable("time") String time,
-                      @PathVariable("id") Long id,
+                      @PathVariable("id") Long id){
 //                      @RequestHeader(value= Auth.AUTHORIZATION) String auth
-                      @PathVariable("name") String username){
+//                      @PathVariable("name") String username){
         //1.动态获取到当前的登录人
         //这里是根据cookie来解密获取username的，这里怎么获取到cookie的呢？
 //        String username = tokenDecode.getUserInfo().get("username");
         //上边这个怎么玩？
 //        String username = "allen";
 
+        String username =  UUID.randomUUID().toString();
         //2.基于业务层进行秒杀下单
         SeckillStatus result = secKillOrderService.add(id, time, username);
+
 
         //3.返回结果
         if (result!=null){
             //下单成功
-            return new Result(true, StatusCode.OK,"排队成功",result);
+            return new Result(true, StatusCode.OK,"排队成功"+username,result);
         }else{
             //下单失败
-            return new Result(false,StatusCode.ERROR,"排队失败",null);
+            return new Result(false,StatusCode.ERROR,"排队失败",username);
         }
     }
 

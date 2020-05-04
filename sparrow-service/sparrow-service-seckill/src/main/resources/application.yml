@@ -4,7 +4,7 @@ spring:
   jackson:
     time-zone: GMT+8
   application:
-    name: sparrow-order
+    name: sparrow-seckill
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://47.93.203.220:3306/mymall_seckill?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2b8
@@ -22,6 +22,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://127.0.0.1:6868/eureka
+#      defaultZone: http://127.0.0.1:6868/eureka
+      defaultZone: http://47.93.203.220:6868/eureka
   instance:
     prefer-ip-address: true
