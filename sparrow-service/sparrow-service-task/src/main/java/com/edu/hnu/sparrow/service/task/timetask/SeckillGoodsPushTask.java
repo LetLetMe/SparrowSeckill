@@ -1,12 +1,12 @@
-package com.edu.hnu.sparrow.service.seckill.task;
-
+package com.edu.hnu.sparrow.service.task.timetask;
 
 
 import com.alibaba.fastjson.JSON;
 import com.edu.hnu.sparrow.common.conts.CacheKey;
 import com.edu.hnu.sparrow.common.util.DateUtil;
-import com.edu.hnu.sparrow.service.seckill.dao.SeckillGoodsMapper;
-import com.edu.hnu.sparrow.service.seckill.pojo.SeckillGoods;
+
+import com.edu.hnu.sparrow.service.task.mapper.SeckillGoodsMapper;
+import com.edu.hnu.sparrow.service.task.pojo.SeckillGoods;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -45,6 +45,7 @@ public class SeckillGoodsPushTask {
          * 	8) 执行查询获取对应的结果集
          * 2.将秒杀商品存入缓存
          */
+        System.out.println("活着");
 
         List<Date> dateMenus = DateUtil.getDateMenus(); // 5个
 

@@ -8,8 +8,11 @@ import com.edu.hnu.sparrow.service.seckill.dao.SeckillOrderMapper;
 import com.edu.hnu.sparrow.service.seckill.pojo.SeckillOrder;
 import com.edu.hnu.sparrow.service.seckill.service.SecKillOrderService;
 import com.edu.hnu.sparrow.service.seckill.task.MultingThreadCreateOrder;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import sun.misc.Cache;
@@ -20,6 +23,8 @@ import java.util.Date;
 
 @Service
 public class SecKillOrderServiceImpl implements SecKillOrderService {
+
+
 
 
 
@@ -34,6 +39,10 @@ public class SecKillOrderServiceImpl implements SecKillOrderService {
 
     @Autowired
     IdWorker idWorker;
+
+    @Autowired
+    private AmqpTemplate amqpTemplate;
+
 
     //注意下单要传递几个参数
     //用户需要是在登陆的状态下，从商品详情页面发起下单请求
@@ -61,7 +70,8 @@ public class SecKillOrderServiceImpl implements SecKillOrderService {
         //放入排队队列中
         //所有商品一个总的排队队列
 
-        redisTemplate.boundListOps(CacheKey.SEC_KILL_USER_PAIDUI).leftPush(JSON.toJSONString(seckillStatus));
+//        redisTemplate.boundListOps(CacheKey.SEC_KILL_USER_PAIDUI).leftPush(JSON.toJSONString(seckillStatus));
+//        amqpTemplate.convertAndSend("CLOSE-ORDER-EXCHANGE", "order.create", seckillStatus.getUserName());
 
 
 
@@ -69,7 +79,7 @@ public class SecKillOrderServiceImpl implements SecKillOrderService {
 
         redisTemplate.boundHashOps(CacheKey.SECKILL_USER_CHONGFU_PAIDUI).put(username,JSON.toJSONString(seckillStatus));
 
-        multingThreadCreateOrder.creadOrder();
+//        multingThreadCreateOrder.creadOrder();
         //真正想实现异步抢单，还是用mq靠谱
         return seckillStatus;
     }

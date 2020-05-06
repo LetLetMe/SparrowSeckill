@@ -1,14 +1,10 @@
 server:
-  port: 9017
-  tomcat:
-    uri-encoding: UTF-8
-    max-threads: 1000
-    max-connections: 20000
+  port: 9020
 spring:
   jackson:
     time-zone: GMT+8
   application:
-    name: sparrow-seckill
+    name: sparrow-task
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://47.93.203.220:3306/mymall_seckill?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&serverTimezone=GMT%2b8

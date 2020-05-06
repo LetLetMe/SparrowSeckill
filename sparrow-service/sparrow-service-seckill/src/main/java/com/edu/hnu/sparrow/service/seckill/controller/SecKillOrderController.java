@@ -37,6 +37,7 @@ public class SecKillOrderController {
         String username =  UUID.randomUUID().toString();
         //2.基于业务层进行秒杀下单
         SeckillStatus result = secKillOrderService.add(id, time, username);
+//        System.out.println("我执行了");
 
 
         //3.返回结果

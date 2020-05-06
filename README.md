@@ -23,5 +23,6 @@ srping boot,spring cloud,eureka,mysql
 
 
 ### 测试结果
-单机qps最高到118，平均在90到100之间
-![img](./image/WechatIMG3529.png)
+单机qps优化后最高到169
+![img](./image/QQ20200506-0.png)
+

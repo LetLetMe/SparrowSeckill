@@ -1,6 +1,5 @@
-package com.edu.hnu.sparrow.service.seckill;
+package com.edu.hnu.sparrow.service.task;
 
-import com.edu.hnu.sparrow.common.util.IdWorker;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,37 +8,22 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
-
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
 @EnableEurekaClient
-@MapperScan(basePackages = {"com.edu.hnu.sparrow.service.seckill.dao"})
-//@EnableScheduling
-//这个是用来支持多线程异步任务的
-//@EnableAsync
-public class SeckillApplication extends SpringBootServletInitializer {
-
-
+@MapperScan(basePackages = {"com.edu.hnu.sparrow.service.task.mapper"})
+@EnableScheduling
+public class TaskApplication extends SpringBootServletInitializer {
     public static void main(String[] args) {
-        SpringApplication.run(SeckillApplication.class,args);
+        SpringApplication.run(TaskApplication.class);
     }
-
-    //idwork
-    @Bean
-    public IdWorker idWorker(){
-        return new IdWorker(1,1);
-    }
-
     @Bean
     public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
@@ -71,11 +55,4 @@ public class SeckillApplication extends SpringBootServletInitializer {
             SpringApplicationBuilder builder) {
         return builder.sources(this.getClass());
     }
-
-
-    //这个怎么玩？
-//    @Bean
-//    public TokenDecode tokenDecode(){
-//        return new TokenDecode();
-//    }
 }

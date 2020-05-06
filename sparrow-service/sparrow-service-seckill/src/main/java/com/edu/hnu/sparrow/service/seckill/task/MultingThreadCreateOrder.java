@@ -40,7 +40,7 @@ public class MultingThreadCreateOrder {
     private AmqpTemplate amqpTemplate;
 
     //加了这个注解这个方法调用时候就是多线程异步执行了
-    @Async
+//    @Async
     public void creadOrder(){
         SeckillStatus seckillStatus=JSON.parseObject((String)redisTemplate.boundListOps(CacheKey.SEC_KILL_USER_PAIDUI).rightPop(),SeckillStatus.class);
         //这个是spuId，别搞错了
