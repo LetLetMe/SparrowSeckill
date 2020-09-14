@@ -13,6 +13,9 @@ CREATE TABLE `tb_pay_order` (
 
 DROP TABLE IF EXISTS `tb_seckill_goods`;
 CREATE TABLE `tb_seckill_goods` (
+
+
+
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `goods_id` bigint(20) DEFAULT NULL COMMENT 'spu ID',
   `item_id` bigint(20) DEFAULT NULL COMMENT 'sku ID',
